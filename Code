@@ -1,0 +1,47 @@
+function sendEmails3() {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var startRow = 2;  // First row of data to process
+  var numRows = sheet.getLastRow(); 
+  var dataRange = sheet.getRange(startRow, 1, numRows, 100) //change the 100 if you need more emails
+  // Fetch values for each row in the Range.
+  var data = dataRange.getValues();
+  for (var i = 0; i < data.length; ++i) {
+    var row = data[i];
+    var emailAddress = row[1];  // Second column
+    var message = row[2];       // Third column
+    var subject = row[3];       // Fourth column
+    var attachement1 = row[5];    // Sixth column
+    var attachement2 = row[6];    // Seventh column
+    var attachement3 = row[7];    // Eighth column
+    var sendername = row[4] // Fifth Column
+    var emailSent = row[8];     // Ninth column
+    if (emailSent != 'EMAIL_SENT') {  // Prevents sending duplicates
+      var file1 = DriveApp.getFilesByName(attachement1);
+      var file2 = DriveApp.getFilesByName(attachement2);
+      var file3 = DriveApp.getFilesByName(attachement3);
+      if (emailAddress!="") {
+        if (file1.hasNext() && file2.hasNext() && file3.hasNext()) {
+          MailApp.sendEmail(emailAddress, subject, message, {
+          attachments: [file1.next().getAs(MimeType.PDF), file2.next().getAs(MimeType.PDF), file3.next().getAs(MimeType.PDF)],
+          name: sendername
+          });}
+        else if (file1.hasNext() && file2.hasNext()) {
+          MailApp.sendEmail(emailAddress, subject, message, {
+          attachments: [file1.next().getAs(MimeType.PDF), file2.next().getAs(MimeType.PDF)],
+          name: sendername
+          });}
+         else if (file1.hasNext()) {
+          MailApp.sendEmail(emailAddress, subject, message, {
+          attachments: [file1.next().getAs(MimeType.PDF)],
+          name: sendername
+          });}
+        else {
+          MailApp.sendEmail(emailAddress, subject, message, {
+          name: sendername});}
+      sheet.getRange(startRow + i, 9).setValue('EMAIL_SENT');
+      // Make sure the cell is updated right away in case the script is interrupted
+      SpreadsheetApp.flush();
+    }
+  }
+}
+}
